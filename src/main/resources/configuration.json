@@ -48,14 +48,16 @@
     {
       "name": "Independence Day",
       "month": 7,
-      "day": "4",
-      "daysOfWeek": ["monday", "tuesday", "wednesday", "thursday", "friday"]
+      "day": 4,
+      "daysOfWeek": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+      "which": "all"
     },
     {
       "name": "Labor Day",
       "month": 9,
-      "day": "*",
-      "daysOfWeek": ["monday"]
+      "day": null,
+      "daysOfWeek": ["monday"],
+      "which": "first"
     }
   ]
 }

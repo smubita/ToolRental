@@ -19,7 +19,7 @@ public class Tool {
                 this.getBrand(),
                 this.getCharge().getDailyCharge(),
                 this.getCharge().hasWeekdayCharge() ? "Yes" : "No",
-                this.getCharge().hasWeekdayCharge() ? "Yes" : "No",
+                this.getCharge().hasWeekendCharge() ? "Yes" : "No",
                 this.getCharge().hasHolidayCharge() ? "Yes" : "No"
         );
     }

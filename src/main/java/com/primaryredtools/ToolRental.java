@@ -1,113 +1,133 @@
 package com.primaryredtools;
 
 import com.primaryredtools.models.Charge;
+import com.primaryredtools.models.Holiday;
+import com.primaryredtools.models.RentalAgreement;
 import com.primaryredtools.models.Tool;
 
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.*;
 
+import com.primaryredtools.utilities.JSON;
 import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import static com.primaryredtools.utilities.JSON.*;
 
 @Getter
 public class ToolRental {
     private HashMap<String, Tool> tools;
     private HashMap<String, Charge> charges;
+    private List<Holiday> holidays;
     private JSONObject configuration;
-
 
     public ToolRental() {
         this.tools = new HashMap<String, Tool>();
         this.charges = new HashMap<String, Charge>();
-        this.configuration = readConfiguration();
+        this.configuration = JSON.readJSON("configuration.json");
 
         this.readCharges();
         this.readTools();
     }
 
+    public void readHolidays() {
+        JSONArray holidays = getArray(this.getConfiguration(), "holidays");
+        for(int i = 0; i < holidays.length(); i++) {
+            Holiday holiday = readHoliday(holidays, i);
+            this.getHolidays().add(holiday);
+        }
+    }
+
     public void readCharges() {
-        JSONArray tools = (JSONArray) this.getConfiguration().get("charges");
-        for (int i = 0; i < tools.length(); i++) {
-            Charge thisCharge = ToolRental.readCharge(tools, i);
+        JSONArray charges = getArray(this.getConfiguration(), "charges");
+        for (int i = 0; i < charges.length(); i++) {
+            Charge thisCharge = ToolRental.readCharge(charges, i);
             this.getCharges().put(thisCharge.getToolType(), thisCharge);
         }
     }
 
     public void readTools( ) {
-        JSONArray tools = (JSONArray) this.getConfiguration().get("tools");
+        JSONArray tools = getArray(this.getConfiguration(), "tools");
         for (int i = 0; i < tools.length(); i++) {
             Tool thisTool = ToolRental.readTool(tools, i, this.getCharges());
             this.getTools().put(thisTool.getToolCode(), thisTool);
         }
     }
 
+    private static Holiday readHoliday(JSONArray holidays, int index) {
+        JSONArray daysOfWeek = (JSONArray) ((JSONObject) holidays.get(index)).get("daysOfWeek");
+        List<DayOfWeek> dayList = new ArrayList<DayOfWeek>();
+        for(int i = 0; i < daysOfWeek.length(); i++) {
+            DayOfWeek day = DayOfWeek.valueOf( daysOfWeek.getString(i) );
+            dayList.add(day);
+        }
+
+        return Holiday.builder()
+                .name(getField(holidays, index, "name"))
+                .month(Month.of(getIntegerField(holidays, index, "month")))
+                .day(getIntegerField(holidays, index, "day:"))
+                .dayList(
+                       dayList
+                )
+                .build();
+    }
+
     private static Tool readTool(JSONArray tools, int index, HashMap<String, Charge> chargeMap) {
-        String toolCode = getField(tools, index, "code");
         String toolType = getField(tools, index, "toolType");
-        String brand = getField(tools, index, "brand");
 
         return Tool.builder()
-                .toolCode(toolCode)
+                .toolCode(getField(tools, index, "code"))
                 .toolType(toolType)
-                .brand(brand)
+                .brand(getField(tools, index, "brand"))
                 .charge(chargeMap.get(toolType))
                 .build();
     }
 
-    private static String getField(JSONArray array, int index, String fieldName) {
-        return ((JSONObject) array.get(index)).get(fieldName).toString();
-    }
-
     private static Charge readCharge(JSONArray tools, int index) {
-        String toolType = getField(tools, index, "toolType");
-        BigDecimal dailyCharge = new BigDecimal(
-                getField(tools, index, "dailyCharge")
-        );
-        boolean weekdayCharge = Boolean.getBoolean(getField(tools, index, "weekdayCharge"));
-        boolean weekendCharge = Boolean.getBoolean(getField(tools, index, "weekendCharge"));
-        boolean holidayCharge = Boolean.getBoolean(getField(tools, index, "holidayCharge"));
-
         return Charge.builder()
-                .dailyCharge(dailyCharge)
-                .toolType(toolType)
-                .weekdayCharge(weekdayCharge)
-                .weekendCharge(weekendCharge)
-                .holidayCharge(holidayCharge)
+                .dailyCharge(getBigDecimalField(tools, index, "dailyCharge"))
+                .toolType(getField(tools, index, "toolType"))
+                .weekdayCharge(getBooleanField(tools, index, "weekdayCharge"))
+                .weekendCharge(getBooleanField(tools, index, "weekendCharge"))
+                .holidayCharge(getBooleanField(tools, index, "holidayCharge"))
                 .build();
     }
 
-    private static JSONObject readConfiguration() {
-        InputStream is
-                = ClassLoader.getSystemResourceAsStream("configuration.json");
+    public void checkout(String toolCode, int rentalDayCount, int discountPercentage, LocalDate checkoutDate) {
+        checkRental(toolCode, rentalDayCount, discountPercentage, checkoutDate);
 
-        if(is == null) {
-           System.out.println("Could not find the configuration file 'configuration.json'");
-           System.exit(1);
-        }
-        Scanner readJson = new Scanner(is);
+        Tool selectedTool = this.getTools().get(toolCode);
 
-        StringBuilder jsonString = new StringBuilder();
-        while(readJson.hasNextLine()) {
-            jsonString.append(readJson.nextLine());
-        }
-        return new JSONObject(jsonString.toString());
+        RentalAgreement rentalAgreement = RentalAgreement.builder()
+                .tool(selectedTool)
+                .rentalDays(rentalDayCount)
+                .checkoutDate(checkoutDate)
+                .build();
+
+        rentalAgreement.print();
+
     }
 
-    public void displayTools() {
-        System.out.printf("%-10s %-16s %-12s %12s  %-15s %-15s %-15s%n",
-                "Tool Code",
-                "Tool Type",
-                "Brand",
-                "Daily Charge",
-                "Weekday Charge",
-                "Weekend Charge",
-                "Holiday Charge"
-        );
-        for(String toolCode: this.getTools().keySet()) {
-            System.out.println(tools.get(toolCode));
+    private void checkRental(String toolCode, int rentalDayCount, int discountPercentage, LocalDate checkoutDate) {
+        if(rentalDayCount < 1) {
+            throw new IllegalArgumentException("The rental day could should be greater than or equal to one.");
+        }
+
+        if(discountPercentage < 0 || discountPercentage > 100) {
+            throw new IllegalArgumentException("THe discount percentage must be between 0 and 100.");
+        }
+
+        if(! this.getTools().containsKey(toolCode)) {
+            throw new IllegalArgumentException(String.format("Tool %s is not in our current inventory.", toolCode));
+        }
+
+        if(checkoutDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("The check out date cannot be in the past.");
         }
     }
 }
