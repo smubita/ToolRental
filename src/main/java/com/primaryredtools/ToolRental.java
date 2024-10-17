@@ -15,13 +15,15 @@ import org.json.JSONObject;
 
 @Getter
 public class ToolRental {
+    public static final String CONFIGURATION_JSON = "configuration.json";
+
     private HashMap<String, Tool> tools;
     private HashMap<String, Charge> charges;
     private List<Holiday> holidays;
     private JSONObject configuration;
 
     public ToolRental() throws FileNotFoundException {
-        this.configuration = JSON.readJSON("configuration.json");
+        this.configuration = JSON.readJSON(CONFIGURATION_JSON);
 
         this.charges = Charge.readCharges(this.getConfiguration());
         this.tools = Tool.readTools(this.getConfiguration(), this.getCharges());
@@ -37,15 +39,13 @@ public class ToolRental {
 
         Tool selectedTool = this.getTools().get(toolCode);
 
-        RentalAgreement rentalAgreement = RentalAgreement.builder()
+        return RentalAgreement.builder()
                 .tool(selectedTool)
                 .rentalDays(rentalDayCount)
                 .checkoutDate(checkoutDate)
                 .holidays(this.getHolidays())
                 .discountPercentage(discountPercentage)
                 .build();
-
-        return rentalAgreement;
     }
 
     private void checkRental(String toolCode, int rentalDayCount, int discountPercentage, LocalDate checkoutDate) {

@@ -25,7 +25,7 @@ The function that can print out a `RentalAgreement` is `print()`. It is used in 
 
 The Test Suite is under `src/tests`. It uses its own configuration file that is a clone of the one the main program runs on.
 
-There is a test class for each of three of the java classes. The tests required by the assignment are in the class `DemonstationSecenariosTest`.
+There is a test class for each of four of the java classes. The tests required by the assignment are in the class `DemonstationSecenariosTest`.
 
 Thank you! Contact me with comments at `stephen.mubita@gmail.com`.
 
