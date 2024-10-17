@@ -4,14 +4,12 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -24,20 +22,21 @@ public class RentalAgreement {
     private int discountPercentage;
     private LocalDate checkoutDate;
     private List<Holiday> holidays;
+    private Integer chargeDays = null;
 
     public LocalDate getDueDate() {
         return this.getCheckoutDate().plusDays(this.getRentalDays());
     }
 
-    private String getToolCode() {
+    public String getToolCode() {
         return this.getTool().getToolCode();
     }
 
-    private String getBrand() {
+    public String getBrand() {
         return this.getTool().getBrand();
     }
 
-    private String getToolType() {
+    public String getToolType() {
         return this.getTool().getToolType();
     }
 
@@ -49,39 +48,61 @@ public class RentalAgreement {
         System.out.println(this);
     }
 
+    public BigDecimal getPreDiscountCharge() {
+        return this.getDailyRentalCharge().multiply(BigDecimal.valueOf(this.calculateChargeDays()));
+    }
 
-   public int getChargeDays() {
+    public BigDecimal getDiscountAmount() {
+        return this.getPreDiscountCharge()
+                .multiply( BigDecimal.valueOf(this.getDiscountPercentage()))
+                .divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal getFinalCharge() {
+        return this.getPreDiscountCharge().subtract(this.getDiscountAmount());
+    }
+
+    public int calculateChargeDays() {
+        if(this.chargeDays != null) {
+            return this.chargeDays;
+        }
+
         List<LocalDate> rentalPeriod = getRentalDayList();
 
         int chargeDays = 0;
 
+        per_day:
         for(LocalDate thisDate: rentalPeriod) {
-
+            // First check for a holiday
             for(Holiday holiday: this.getHolidays()) {
                 if(holiday.matchesDate(thisDate)) {
                     if(this.getTool().getCharge().hasHolidayCharge()) {
                         chargeDays += 1;
-                        break;
+                        continue per_day;
                     }
                 }
             }
 
+            // then check for a weekend day
             if(thisDate.getDayOfWeek() == DayOfWeek.SATURDAY || thisDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
                 if(this.getTool().getCharge().hasWeekendCharge()) {
                     chargeDays += 1;
                 }
             } else {
+                // then treat like a "working" week day.
                 if(this.getTool().getCharge().hasWeekdayCharge()) {
                     chargeDays += 1;
                 }
             }
 
         }
+        this.chargeDays = chargeDays;
         return chargeDays;
     }
 
-    private List<LocalDate> getRentalDayList() {
-        return this.getCheckoutDate().datesUntil(this.getDueDate().plusDays(1L)).collect(Collectors.toList());
+    public List<LocalDate> getRentalDayList() {
+        return this.getCheckoutDate().plusDays(1L).datesUntil
+                (this.getDueDate().plusDays(1L)).collect(Collectors.toList());
     }
 
     @Override
@@ -100,11 +121,15 @@ public class RentalAgreement {
                 this.getDueDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))));
         agreement.append(String.format("Daily rental charge: %s%n",
                 moneyFormatter.format(this.getDailyRentalCharge())));
-        agreement.append(String.format("Charge days: %d%n", this.getChargeDays()));
+        agreement.append(String.format("Charge days: %d%n", this.calculateChargeDays()));
+        agreement.append(String.format("Pre-discount charge: %s%n",
+                moneyFormatter.format(this.getPreDiscountCharge())));
+        agreement.append(String.format("Discount percentage: %d%%%n", this.getDiscountPercentage()));
+        agreement.append(String.format("Discount amounte: %s%n",
+                moneyFormatter.format(this.getDiscountAmount())));
+        agreement.append(String.format("Final Charge: %s%n",
+                moneyFormatter.format(this.getFinalCharge())));
 
         return agreement.toString();
     }
-
-
-
 }

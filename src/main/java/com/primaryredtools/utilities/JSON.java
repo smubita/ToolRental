@@ -30,7 +30,8 @@ public class JSON {
     }
 
     public static Boolean getBooleanField(JSONArray array, int index, String fieldName) {
-        return Boolean.getBoolean(getField(array, index, fieldName));
+        return Boolean.valueOf(getField(array, index, fieldName));
+
     }
 
     public static BigDecimal getBigDecimalField(JSONArray array, int index, String fieldName) {
