@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class JSON {
+    private JSON() {}
+
     public static JSONObject readJSON(String resourceFileName) throws FileNotFoundException {
         InputStream is
                 = ClassLoader.getSystemResourceAsStream(resourceFileName);
@@ -26,16 +28,16 @@ public class JSON {
         return new JSONObject(jsonString.toString());
     }
 
-    public static String getField(JSONObject record, String fieldname) {
-        return record.getString(fieldname);
+    public static String getField(JSONObject jsonRecord, String fieldname) {
+        return jsonRecord.getString(fieldname);
     }
 
-    public static Boolean getBooleanField(JSONObject record, String fieldname) {
-        return record.getBoolean(fieldname);
+    public static Boolean getBooleanField(JSONObject jsonRecord, String fieldname) {
+        return jsonRecord.getBoolean(fieldname);
     }
 
-    public static BigDecimal getBigDecimalField(JSONObject record, String fieldname) {
-        return record.getBigDecimal(fieldname);
+    public static BigDecimal getBigDecimalField(JSONObject jsonRecord, String fieldname) {
+        return jsonRecord.getBigDecimal(fieldname);
     }
 
     public static String getField(JSONArray array, int index, String fieldName) {
@@ -50,8 +52,8 @@ public class JSON {
         return ((JSONObject) array.get(index)).getBigDecimal(fieldName);
     }
 
-    public static Integer getIntegerField(JSONObject record, String fieldName) {
-        return record.getInt(fieldName);
+    public static Integer getIntegerField(JSONObject jsonRecord, String fieldName) {
+        return jsonRecord.getInt(fieldName);
     }
 
     public static Integer getIntegerField(JSONArray array, int index, String fieldName) {

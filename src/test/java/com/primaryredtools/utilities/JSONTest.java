@@ -1,6 +1,5 @@
-package utilities;
+package com.primaryredtools.utilities;
 
-import com.primaryredtools.utilities.JSON;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;

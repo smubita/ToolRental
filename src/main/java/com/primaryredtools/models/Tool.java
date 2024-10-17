@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.StreamSupport;
 
 import static com.primaryredtools.utilities.JSON.*;
@@ -33,20 +34,20 @@ public class Tool {
         );
     }
 
-    public static HashMap<String, Tool> readTools(JSONObject configuration, HashMap<String, Charge> chargeMap ) {
-        HashMap<String, Tool> toolMap = new HashMap<String, Tool>();
+    public static Map<String, Tool> readTools(JSONObject configuration, Map<String, Charge> chargeMap ) {
+        Map<String, Tool> toolMap = new HashMap<>();
         JSONArray tools = getArray(configuration, "tools");
 
         StreamSupport.stream(tools.spliterator(), false)
-            .forEach(record -> {
-                Tool thisTool = readTool((JSONObject) record, chargeMap);
+            .forEach(jsonTool -> {
+                Tool thisTool = readTool((JSONObject) jsonTool, chargeMap);
                 toolMap.put(thisTool.getToolCode(), thisTool);
             });
 
         return toolMap;
     }
 
-    private static Tool readTool(JSONObject tools, HashMap<String, Charge> chargeMap) {
+    private static Tool readTool(JSONObject tools, Map<String, Charge> chargeMap) {
         String toolType = getField(tools, "toolType");
 
         return Tool.builder()

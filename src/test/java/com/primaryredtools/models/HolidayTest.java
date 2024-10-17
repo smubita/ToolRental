@@ -1,6 +1,5 @@
-package models;
+package com.primaryredtools.models;
 
-import com.primaryredtools.models.Holiday;
 import org.junit.Before;
 import org.junit.Test;
 

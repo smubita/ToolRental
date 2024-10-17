@@ -27,10 +27,10 @@ public class Holiday {
 
     public static Holiday readHoliday(JSONObject holidays) {
         JSONArray daysOfWeek = (JSONArray) holidays.get("daysOfWeek");
-        List<DayOfWeek> dayList = new ArrayList<DayOfWeek>();
+        List<DayOfWeek> dayList = new ArrayList<>();
         StreamSupport.stream(daysOfWeek.spliterator(), false)
-            .forEach(record -> {
-                DayOfWeek day = DayOfWeek.valueOf( (String) record);
+            .forEach(jsonHoliday -> {
+                DayOfWeek day = DayOfWeek.valueOf( (String) jsonHoliday);
                 dayList.add(day);
             });
 
@@ -44,11 +44,11 @@ public class Holiday {
     }
 
     public static List<Holiday> readHolidays(JSONObject configuration) {
-        List<Holiday> holidayList = new ArrayList<Holiday>();
+        List<Holiday> holidayList = new ArrayList<>();
         JSONArray holidays = getArray(configuration, "holidays");
         StreamSupport.stream(holidays.spliterator(), false)
-                .forEach(record -> {
-                    Holiday holiday = readHoliday( (JSONObject) record);
+                .forEach(jsonHoliday -> {
+                    Holiday holiday = readHoliday( (JSONObject) jsonHoliday);
                     holidayList.add(holiday);
                 });
 
@@ -61,31 +61,9 @@ public class Holiday {
 
         // this is for ordinal holidays - last or first X of a month
         boolean matchesMonth = thisDate.getMonth() == this.getMonth();
-        if(matchesMonth && this.getDay() < 1) {
-            switch (this.getWhich()) {
-                case "first" -> {
-                    if (checkNthDayInMonth(thisDate, 1)) return true;
-                }
-                case "second" -> {
-                    if (checkNthDayInMonth(thisDate, 2)) return true;
-                }
-                case "third" -> {
-                    if (checkNthDayInMonth(thisDate, 3)) return true;
-                }
-                case "fourth" -> {
-                    if (checkNthDayInMonth(thisDate, 4)) return true;
-                }
-                case "fifth" -> {
-                    if (checkNthDayInMonth(thisDate, 5)) return true;
-                }
-                case "last" -> {
-                    for (DayOfWeek day : this.getDayList()) {
-                        if (thisDate.with(TemporalAdjusters.lastInMonth(day)).equals(thisDate)) {
-                            return true;
-                        }
-                    }
-                }
-            }
+        // getDay() less than zero indicates a 'floating' holiday, not attached to a specific dayOf Month
+        if( matchesMonth && (this.getDay() < 1) && checkForOrdinalHoliday(thisDate)) {
+                return true;
         }
 
         // This matches holidays that are observed on their actual day
@@ -107,18 +85,47 @@ public class Holiday {
         // of the actual day is not on the allowed list)
         LocalDate previousDate = thisDate.minusDays(1L);
         matchesDay = (previousDate.getMonth() == this.getMonth() && previousDate.getDayOfMonth() == this.getDay());
-        if(matchesDay && this.getDayList().contains(nextDate.getDayOfWeek())
-            && ! this.getDayList().contains(previousDate.getDayOfWeek())) {
-            return true;
-        }
 
-        // not a holiday
+        return matchesDay && this.getDayList().contains(nextDate.getDayOfWeek())
+                && !this.getDayList().contains(previousDate.getDayOfWeek());
+    }
+
+    private boolean checkForOrdinalHoliday(LocalDate thisDate) {
+        switch (this.getWhich()) {
+            case "first" -> {
+                if (checkNthDayInMonth(thisDate, 1)) return true;
+            }
+            case "second" -> {
+                if (checkNthDayInMonth(thisDate, 2)) return true;
+            }
+            case "third" -> {
+                if (checkNthDayInMonth(thisDate, 3)) return true;
+            }
+            case "fourth" -> {
+                if (checkNthDayInMonth(thisDate, 4)) return true;
+            }
+            case "fifth" -> {
+                if (checkNthDayInMonth(thisDate, 5)) return true;
+            }
+            case "last" -> {
+                if (checkLastDayInMonth(thisDate)) return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkLastDayInMonth(LocalDate thisDate) {
+        for (DayOfWeek thisDay : this.getDayList()) {
+            if (thisDate.with(TemporalAdjusters.lastInMonth(thisDay)).equals(thisDate)) {
+                return true;
+            }
+        }
         return false;
     }
 
     private boolean checkNthDayInMonth(LocalDate thisDate, int ordinal) {
-        for (DayOfWeek day : this.getDayList()) {
-            if (thisDate.with(TemporalAdjusters.dayOfWeekInMonth(ordinal, day)).equals(thisDate)) {
+        for (DayOfWeek thisDay : this.getDayList()) {
+            if (thisDate.with(TemporalAdjusters.dayOfWeekInMonth(ordinal, thisDay)).equals(thisDate)) {
                 return true;
             }
         }

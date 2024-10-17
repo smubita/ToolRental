@@ -1,7 +1,5 @@
-package models;
+package com.primaryredtools.models;
 
-import com.primaryredtools.models.Charge;
-import com.primaryredtools.models.Tool;
 import org.junit.Test;
 
 import java.math.BigDecimal;

@@ -1,4 +1,5 @@
-import com.primaryredtools.ToolRental;
+package com.primaryredtools;
+
 import com.primaryredtools.models.Holiday;
 import com.primaryredtools.models.Tool;
 import org.junit.Before;
@@ -57,28 +58,34 @@ public class ToolRentalTest {
 
     @Test
     public void checkoutNullTool() {
+        LocalDate now = LocalDate.now();
+
         assertThrows(NullPointerException.class, () -> {
-            toolRental.checkout(null, 1, 1, LocalDate.now());
+            toolRental.checkout(null, 1, 1, now);
         });
     }
 
     @Test
     public void checkoutIncorrectTool() {
+        LocalDate now = LocalDate.now();
+
         IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () -> {
-            toolRental.checkout("purple", 1, 1, LocalDate.now());
+            toolRental.checkout("purple", 1, 1, now);
         });
         assertEquals("Tool purple is not in our current inventory.", iae.getMessage());
     }
 
     @Test
     public void checkoutWrongPercentages() {
+        LocalDate now = LocalDate.now();
+
         IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () -> {
-            toolRental.checkout("LADW", 1, -4, LocalDate.now());
+            toolRental.checkout("LADW", 1, -4, now);
         });
         assertEquals("The discount percentage must be between 0 and 100.", iae.getMessage());
 
         iae = assertThrows(IllegalArgumentException.class, () -> {
-            toolRental.checkout("CHNS", 101, -4, LocalDate.now());
+            toolRental.checkout("CHNS", 101, -4, now);
         });
 
         assertEquals("The discount percentage must be between 0 and 100.",iae.getMessage());
@@ -86,8 +93,10 @@ public class ToolRentalTest {
 
     @Test
     public void checkWrongDayCount() {
+        LocalDate now = LocalDate.now();
+
         IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () -> {
-            toolRental.checkout("JAKD", -1, 1, LocalDate.now());
+            toolRental.checkout("JAKD", -1, 1, now);
         });
         assertEquals("The rental day should be greater than or equal to one.", iae.getMessage());
     }

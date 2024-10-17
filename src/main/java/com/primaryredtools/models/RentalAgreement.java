@@ -22,7 +22,7 @@ public class RentalAgreement {
     private int discountPercentage;
     private LocalDate checkoutDate;
     private List<Holiday> holidays;
-    private Integer chargeDays = null;
+    private Integer chargeDays;
 
     public LocalDate getDueDate() {
         return this.getCheckoutDate().plusDays(this.getRentalDays());
@@ -63,41 +63,40 @@ public class RentalAgreement {
     }
 
     public int calculateChargeDays() {
-        if(this.chargeDays != null) {
-            return this.chargeDays;
-        }
-
         List<LocalDate> rentalPeriod = getRentalDayList();
-
-        int chargeDays = 0;
+        int newChargeDays = 0;
 
         per_day:
         for(LocalDate thisDate: rentalPeriod) {
             // First check for a holiday
             for(Holiday holiday: this.getHolidays()) {
-                if(holiday.matchesDate(thisDate)) {
-                    if(this.getTool().getCharge().hasHolidayCharge()) {
-                        chargeDays += 1;
-                        continue per_day;
-                    }
+                if(holiday.matchesDate(thisDate) && this.getTool().getCharge().hasHolidayCharge()) {
+                    newChargeDays += 1;
+                    continue per_day;
                 }
+
             }
 
             // then check for a weekend day
-            if(thisDate.getDayOfWeek() == DayOfWeek.SATURDAY || thisDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
-                if(this.getTool().getCharge().hasWeekendCharge()) {
-                    chargeDays += 1;
-                }
-            } else {
-                // then treat like a "working" week day.
-                if(this.getTool().getCharge().hasWeekdayCharge()) {
-                    chargeDays += 1;
-                }
-            }
+            newChargeDays = checkNonHolidayDays(thisDate, newChargeDays);
 
         }
-        this.chargeDays = chargeDays;
-        return chargeDays;
+        this.chargeDays = newChargeDays;
+        return newChargeDays;
+    }
+
+    private int checkNonHolidayDays(LocalDate thisDate, int newChargeDays) {
+        if(thisDate.getDayOfWeek() == DayOfWeek.SATURDAY || thisDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            if(this.getTool().getCharge().hasWeekendCharge()) {
+                newChargeDays += 1;
+            }
+        } else {
+            // then treat like a "working" week day.
+            if(this.getTool().getCharge().hasWeekdayCharge()) {
+                newChargeDays += 1;
+            }
+        }
+        return newChargeDays;
     }
 
     public List<LocalDate> getRentalDayList() {

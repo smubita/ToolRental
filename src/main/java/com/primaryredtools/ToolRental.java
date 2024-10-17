@@ -17,8 +17,8 @@ import org.json.JSONObject;
 public class ToolRental {
     public static final String CONFIGURATION_JSON = "configuration.json";
 
-    private HashMap<String, Tool> tools;
-    private HashMap<String, Charge> charges;
+    private Map<String, Tool> tools;
+    private Map<String, Charge> charges;
     private List<Holiday> holidays;
     private JSONObject configuration;
 
@@ -68,10 +68,5 @@ public class ToolRental {
         if(checkoutDate == null) {
             throw new NullPointerException("The checkout date cannot be null.");
         }
-
-        // Realized this wasn't in the requirements
-//        if(checkoutDate.isBefore(LocalDate.now())) {
-//            throw new IllegalArgumentException("The check out date cannot be in the past.");
-//        }
     }
 }

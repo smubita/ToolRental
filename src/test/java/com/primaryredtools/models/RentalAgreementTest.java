@@ -1,9 +1,5 @@
-package models;
+package com.primaryredtools.models;
 
-import com.primaryredtools.models.Charge;
-import com.primaryredtools.models.Holiday;
-import com.primaryredtools.models.RentalAgreement;
-import com.primaryredtools.models.Tool;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -124,7 +120,7 @@ public class RentalAgreementTest {
 
     @Test
     public void checkFinalAmount() {
-        assertEquals(BigDecimal.valueOf(27.72), rentalAgreement.getFinalCharge());;
+        assertEquals(BigDecimal.valueOf(27.72), rentalAgreement.getFinalCharge());
     }
 
     @Test

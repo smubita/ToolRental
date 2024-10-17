@@ -1,4 +1,5 @@
-import com.primaryredtools.ToolRental;
+package com.primaryredtools;
+
 import com.primaryredtools.models.RentalAgreement;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,12 +23,13 @@ public class DemonstrationScenariosTest {
 
     @Test
     public void runTest1() {
+        LocalDate thisDate = LocalDate.of(2015, 9, 3);
         IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () -> {
             toolRental.checkout(
                     "JAKR",
                     5,
                     101,
-                    LocalDate.of(2015, 9, 3));
+                    thisDate);
         });
         assertEquals("The discount percentage must be between 0 and 100.",iae.getMessage());
     }

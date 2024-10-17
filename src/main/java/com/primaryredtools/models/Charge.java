@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.math.BigDecimal;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.StreamSupport;
 
 import static com.primaryredtools.utilities.JSON.*;
@@ -32,12 +33,12 @@ public class Charge {
         return this.isHolidayCharge();
     }
 
-    public static HashMap<String, Charge> readCharges(JSONObject configuration) {
-        HashMap<String, Charge> chargeMap = new HashMap<String, Charge>();
+    public static Map<String, Charge> readCharges(JSONObject configuration) {
+        Map<String, Charge> chargeMap = new HashMap<>();
         JSONArray charges = getArray(configuration, "charges");
         StreamSupport.stream(charges.spliterator(), false)
-            .forEach(record -> {
-                Charge thisCharge = readCharge((JSONObject) record);
+            .forEach(jsonCharge -> {
+                Charge thisCharge = readCharge((JSONObject) jsonCharge);
                 chargeMap.put(thisCharge.getToolType(), thisCharge);
             });
 

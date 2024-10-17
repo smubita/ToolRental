@@ -10,6 +10,6 @@ public class Main {
         ToolRental toolRental = new ToolRental();
         RentalAgreement rentalAgreement
                 = toolRental.checkout("JAKR", 5, 0, LocalDate.now());
-        System.out.println(rentalAgreement);
+        rentalAgreement.print();
     }
 }
