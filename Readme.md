@@ -8,6 +8,7 @@ This project contains a library that runs a checkout process for the fictional s
 - Lombok 1.18
 - json (org.json) 20240303
 - junit 4.13
+- log4j 2.24.1
 
 I had meant to use jupiter, but accidentally used junit 4 and just went with it. sorry!
 

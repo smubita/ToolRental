@@ -1,5 +1,6 @@
 package com.primaryredtools.utilities;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -8,16 +9,21 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Scanner;
 
+import static org.apache.logging.log4j.LogManager.getLogger;
+
 public class JSON {
     private JSON() {}
+
+    private static final Logger logger = getLogger(JSON.class);
 
     public static JSONObject readJSON(String resourceFileName) throws FileNotFoundException {
         InputStream is
                 = ClassLoader.getSystemResourceAsStream(resourceFileName);
 
         if(is == null) {
-            throw new FileNotFoundException(
-                    String.format("Could not find the configuration file '%s'%n", resourceFileName));
+            String errorMessage = String.format("Could not find the configuration file '%s'%n", resourceFileName);
+            logger.error(errorMessage);
+            throw new FileNotFoundException(errorMessage);
         }
         Scanner readJson = new Scanner(is);
 

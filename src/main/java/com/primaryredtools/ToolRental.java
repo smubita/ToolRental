@@ -11,16 +11,21 @@ import java.util.*;
 
 import com.primaryredtools.utilities.JSON;
 import lombok.Getter;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 @Getter
 public class ToolRental {
     public static final String CONFIGURATION_JSON = "configuration.json";
 
-    private Map<String, Tool> tools;
-    private Map<String, Charge> charges;
-    private List<Holiday> holidays;
-    private JSONObject configuration;
+    private final Map<String, Tool> tools;
+    private final Map<String, Charge> charges;
+    private final List<Holiday> holidays;
+    private final JSONObject configuration;
+
+    private static final Logger logger = getLogger(ToolRental.class);
 
     public ToolRental() throws FileNotFoundException {
         this.configuration = JSON.readJSON(CONFIGURATION_JSON);
@@ -28,6 +33,7 @@ public class ToolRental {
         this.charges = Charge.readCharges(this.getConfiguration());
         this.tools = Tool.readTools(this.getConfiguration(), this.getCharges());
         this.holidays = Holiday.readHolidays(this.getConfiguration());
+        logger.info("Checkout tool loaded.");
     }
 
     public RentalAgreement checkout(
@@ -39,34 +45,49 @@ public class ToolRental {
 
         Tool selectedTool = this.getTools().get(toolCode);
 
-        return RentalAgreement.builder()
+        RentalAgreement agreement = RentalAgreement.builder()
                 .tool(selectedTool)
                 .rentalDays(rentalDayCount)
                 .checkoutDate(checkoutDate)
                 .holidays(this.getHolidays())
                 .discountPercentage(discountPercentage)
                 .build();
+
+        String infoMessage = String.format("Checkout:%n %s", agreement);
+        logger.info(infoMessage);
+        return agreement;
+
     }
 
     private void checkRental(String toolCode, int rentalDayCount, int discountPercentage, LocalDate checkoutDate) {
         if(rentalDayCount < 1) {
-            throw new IllegalArgumentException("The rental day should be greater than or equal to one.");
+            String errorMessage = "The rental day should be greater than or equal to one.";
+            logger.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
 
         if(discountPercentage < 0 || discountPercentage > 100) {
-            throw new IllegalArgumentException("The discount percentage must be between 0 and 100.");
+            String errorMessage = "The discount percentage must be between 0 and 100.";
+            logger.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
 
         if(toolCode == null) {
-            throw new NullPointerException("The tool code cannot be null");
+            String errorMessage = "The tool code cannot be null.";
+            logger.error(errorMessage);
+            throw new NullPointerException(errorMessage);
         }
 
         if(! this.getTools().containsKey(toolCode)) {
-            throw new IllegalArgumentException(String.format("Tool %s is not in our current inventory.", toolCode));
+            String errorMessage = String.format("Tool %s is not in our current inventory.", toolCode);
+            logger.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
 
         if(checkoutDate == null) {
-            throw new NullPointerException("The checkout date cannot be null.");
+            String errorMessage = "The checkout date cannot be null";
+            logger.error(errorMessage);
+            throw new NullPointerException(errorMessage);
         }
     }
 }

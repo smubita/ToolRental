@@ -1,7 +1,9 @@
 package com.primaryredtools.models;
 
+import com.primaryredtools.utilities.JSON;
 import lombok.Builder;
 import lombok.Getter;
+import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -13,6 +15,8 @@ import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+
+import static org.apache.logging.log4j.LogManager.getLogger;
 
 @Getter
 @Builder
@@ -124,7 +128,7 @@ public class RentalAgreement {
         agreement.append(String.format("Pre-discount charge: %s%n",
                 moneyFormatter.format(this.getPreDiscountCharge())));
         agreement.append(String.format("Discount percentage: %d%%%n", this.getDiscountPercentage()));
-        agreement.append(String.format("Discount amounte: %s%n",
+        agreement.append(String.format("Discount amount: %s%n",
                 moneyFormatter.format(this.getDiscountAmount())));
         agreement.append(String.format("Final Charge: %s%n",
                 moneyFormatter.format(this.getFinalCharge())));
