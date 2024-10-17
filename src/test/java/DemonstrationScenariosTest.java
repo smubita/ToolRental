@@ -3,6 +3,7 @@ import com.primaryredtools.models.RentalAgreement;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ public class DemonstrationScenariosTest {
     ToolRental toolRental;
 
     @Before
-    public void setup() {
+    public void setup() throws FileNotFoundException {
         toolRental = new ToolRental();
     }
 

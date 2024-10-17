@@ -11,6 +11,7 @@ import java.time.Month;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 import static com.primaryredtools.utilities.JSON.*;
 
@@ -24,30 +25,33 @@ public class Holiday {
     List<DayOfWeek> dayList;
     String which = "all";
 
-    public static Holiday readHoliday(JSONArray holidays, int index) {
-        JSONArray daysOfWeek = (JSONArray) ((JSONObject) holidays.get(index)).get("daysOfWeek");
+    public static Holiday readHoliday(JSONObject holidays) {
+        JSONArray daysOfWeek = (JSONArray) holidays.get("daysOfWeek");
         List<DayOfWeek> dayList = new ArrayList<DayOfWeek>();
-        for(int i = 0; i < daysOfWeek.length(); i++) {
-            DayOfWeek day = DayOfWeek.valueOf( daysOfWeek.getString(i) );
-            dayList.add(day);
-        }
+        StreamSupport.stream(daysOfWeek.spliterator(), false)
+            .forEach(record -> {
+                DayOfWeek day = DayOfWeek.valueOf( (String) record);
+                dayList.add(day);
+            });
 
         return Holiday.builder()
-                .name(getField(holidays, index, "name"))
-                .month(Month.of(getIntegerField(holidays, index, "month")))
-                .day(getIntegerField(holidays, index, "day"))
+                .name(getField(holidays, "name"))
+                .month(Month.of(getIntegerField(holidays, "month")))
+                .day(getIntegerField(holidays, "day"))
                 .dayList(dayList)
-                .which(getField(holidays, index, "which"))
+                .which(getField(holidays, "which"))
                 .build();
     }
 
     public static List<Holiday> readHolidays(JSONObject configuration) {
         List<Holiday> holidayList = new ArrayList<Holiday>();
         JSONArray holidays = getArray(configuration, "holidays");
-        for(int i = 0; i < holidays.length(); i++) {
-            Holiday holiday = readHoliday(holidays, i);
-            holidayList.add(holiday);
-        }
+        StreamSupport.stream(holidays.spliterator(), false)
+                .forEach(record -> {
+                    Holiday holiday = readHoliday( (JSONObject) record);
+                    holidayList.add(holiday);
+                });
+
         return holidayList;
     }
 
@@ -55,6 +59,7 @@ public class Holiday {
         // this function checks to see if the argument date is a holiday.
         // it only checks the two date scenarios listed in the spec: Labor Day and Independence Day
 
+        // this is for ordinal holidays - last or first X of a month
         boolean matchesMonth = thisDate.getMonth() == this.getMonth();
         if(matchesMonth && this.getDay() < 1) {
             switch (this.getWhich()) {
@@ -83,11 +88,14 @@ public class Holiday {
             }
         }
 
+        // This matches holidays that are observed on their actual day
         boolean matchesDay = (thisDate.getMonth() == this.getMonth() && thisDate.getDayOfMonth() == this.getDay());
         if(matchesDay && this.getDayList().contains( thisDate.getDayOfWeek() ) ) {
             return true;
         }
 
+        // This matches holidays that are observed the day before the actual day (if day of week
+        // of the actual day is not on the allowed list)
         LocalDate nextDate = thisDate.plusDays(1L);
         matchesDay = (nextDate.getMonth() == this.getMonth() && nextDate.getDayOfMonth() == this.getDay());
         if(matchesDay && this.getDayList().contains(thisDate.getDayOfWeek())
@@ -95,6 +103,8 @@ public class Holiday {
             return true;
         }
 
+        // This matches holidays that are observed the day after the actual day (if day of week
+        // of the actual day is not on the allowed list)
         LocalDate previousDate = thisDate.minusDays(1L);
         matchesDay = (previousDate.getMonth() == this.getMonth() && previousDate.getDayOfMonth() == this.getDay());
         if(matchesDay && this.getDayList().contains(nextDate.getDayOfWeek())
@@ -102,6 +112,7 @@ public class Holiday {
             return true;
         }
 
+        // not a holiday
         return false;
     }
 

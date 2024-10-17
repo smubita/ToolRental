@@ -17,6 +17,7 @@ public class HolidayTest {
     Holiday christmas;
     Holiday laborDay;
     Holiday independenceDay;
+    Holiday memorialDay;
 
     @Before
     public void setup() {
@@ -54,6 +55,28 @@ public class HolidayTest {
                         DayOfWeek.FRIDAY))
                 .which("all")
                 .build();
+        memorialDay = Holiday.builder()
+                .name("Memorial Day")
+                .month(Month.MAY)
+                .day(-1)
+                .dayList(List.of(
+                        DayOfWeek.MONDAY))
+                .which("last")
+                .build();
+    }
+
+    @Test
+    public void matchesMemorialDay() {
+        assertTrue(memorialDay.matchesDate(LocalDate.of(2024, 5, 27)));
+        assertTrue(memorialDay.matchesDate(LocalDate.of(2025, 5, 26)));
+    }
+
+    @Test
+    public void matchesNonMemorialDay() {
+        assertFalse(memorialDay.matchesDate(LocalDate.of(2024, 5, 20)));
+        assertFalse(memorialDay.matchesDate(LocalDate.of(2024, 5, 28)));
+        assertFalse(memorialDay.matchesDate(LocalDate.of(2025, 5, 19)));
+        assertFalse(memorialDay.matchesDate(LocalDate.of(2025, 5, 25)));
     }
 
     @Test

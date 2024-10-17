@@ -4,6 +4,7 @@ import com.primaryredtools.models.Tool;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -17,7 +18,7 @@ public class ToolRentalTest {
     ToolRental toolRental;
 
     @Before
-    public void setup() {
+    public void setup() throws FileNotFoundException {
         toolRental = new ToolRental();
     }
 

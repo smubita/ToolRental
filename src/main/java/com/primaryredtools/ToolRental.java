@@ -5,6 +5,7 @@ import com.primaryredtools.models.Holiday;
 import com.primaryredtools.models.RentalAgreement;
 import com.primaryredtools.models.Tool;
 
+import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -19,7 +20,7 @@ public class ToolRental {
     private List<Holiday> holidays;
     private JSONObject configuration;
 
-    public ToolRental() {
+    public ToolRental() throws FileNotFoundException {
         this.configuration = JSON.readJSON("configuration.json");
 
         this.charges = Charge.readCharges(this.getConfiguration());

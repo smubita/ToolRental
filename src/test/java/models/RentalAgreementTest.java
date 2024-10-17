@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -141,6 +140,18 @@ public class RentalAgreementTest {
         assertEquals(LocalDate.of(2024, 12, 30),
                 list.stream().max(Comparator.naturalOrder()).get());
         assertFalse(list.contains(LocalDate.of(2025, 1, 1)));
+    }
+
+    @Test
+    public void checkToString() {
+        String result = rentalAgreement.toString();
+        assertEquals(12, result.lines().count());
+        String rentalString = result.lines()
+                .filter(line -> line.startsWith("Rental days"))
+                .findFirst()
+                .get();
+
+        assertEquals("Rental days: 184", rentalString);
     }
 
 }
